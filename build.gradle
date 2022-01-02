@@ -2,6 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.6.2'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
+	id 'jacoco'
 }
 
 group = 'dev.rmjr'
@@ -42,6 +43,24 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
+jacoco.toolVersion = "0.8.7"
+
+jacocoTestReport {
+	reports {
+		xml.enabled true
+		xml.destination file("${buildDir}/jacoco-xml/jacoco.xml")
+		html.destination file("${buildDir}/jacoco-html")
+	}
+}
+
 test {
+	useJUnitPlatform()
+}
+
+tasks.withType(Test) {
+	finalizedBy('jacocoTestReport')
+}
+
+tasks.withType(Test) {
 	useJUnitPlatform()
 }
