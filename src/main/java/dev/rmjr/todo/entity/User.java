@@ -28,7 +28,7 @@ public class User {
 
     @NotNull
     @Size(min = 10, max = 255)
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @NotNull
@@ -47,7 +47,7 @@ public class User {
     private String password;
 
     @Size(min = 7, max = 20)
-    @Column(name = "phone", length = 20, nullable = false)
+    @Column(name = "phone", length = 20, nullable = false, unique = true)
     private String phone;
 
     @CreationTimestamp
