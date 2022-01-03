@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "jwt.expiration",
+      "type": "java.lang.Long",
+      "description": "JWT expiration time in milliseconds."
+    },
+    {
+      "name": "jwt.private-key",
+      "type": "java.lang.String",
+      "description": "JWT private key file absolute path (EC256)."
+    }
+  ]
+}
