@@ -9,13 +9,16 @@ import dev.rmjr.todo.response.UserResponse;
 import dev.rmjr.todo.service.TokenService;
 import dev.rmjr.todo.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.security.Principal;
 
 @RequiredArgsConstructor
 @Validated
@@ -40,5 +43,10 @@ public class UserController {
     @PostMapping
     public ResponseEntity<TokenResponse> authenticate(@RequestBody @Valid UserLoginRequest request) {
         return ResponseEntity.ok(tokenService.generateUserToken(request));
+    }
+
+    @GetMapping
+    public ResponseEntity<UserResponse> getUserInformation(@AuthenticationPrincipal Principal principal) {
+        return ResponseEntity.ok(UserMapper.INSTANCE.userToUserResponse(userService.getUserByPrincipal(principal)));
     }
 }

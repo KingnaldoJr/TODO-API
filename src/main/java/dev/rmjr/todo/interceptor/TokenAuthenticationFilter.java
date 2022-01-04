@@ -1,13 +1,13 @@
 package dev.rmjr.todo.interceptor;
 
 import dev.rmjr.todo.service.KeyService;
-import dev.rmjr.todo.service.UserService;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -19,7 +19,7 @@ import java.io.IOException;
 @Slf4j
 @RequiredArgsConstructor
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
-    private final UserService userService;
+    private final UserDetailsService userDetailsService;
     private final KeyService keyService;
 
     @Override
@@ -34,7 +34,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void authenticate(String token) {
-        UserDetails userDetails = userService.loadUserByUsername(getTokenEmail(token));
+        UserDetails userDetails = userDetailsService.loadUserByUsername(getTokenEmail(token));
         SecurityContextHolder.getContext()
                 .setAuthentication(new UsernamePasswordAuthenticationToken(
                         userDetails.getUsername(), null, userDetails.getAuthorities()));

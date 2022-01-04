@@ -12,6 +12,9 @@ public interface UserMapper {
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
     @Mapping(target = "password", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     User userRegistrationRequestToUser(UserRegistrationRequest user);
     UserResponse userToUserResponse(User user);
 }

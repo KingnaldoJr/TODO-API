@@ -7,19 +7,15 @@ import dev.rmjr.todo.exception.PhoneExistsException;
 import dev.rmjr.todo.mapper.UserMapper;
 import dev.rmjr.todo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.security.Principal;
 
 @RequiredArgsConstructor
 @Service
-public class UserService implements UserDetailsService {
+public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository repository;
 
@@ -37,17 +33,9 @@ public class UserService implements UserDetailsService {
         return repository.save(user);
     }
 
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Optional<User> user = repository.findByEmail(email);
-        if(user.isEmpty()) {
-            throw new UsernameNotFoundException("User not found with email: " + email);
-        }
-
-        return new org.springframework.security.core.userdetails.User(
-                user.get().getEmail(), user.get().getPassword(),
-                true, true, true, true,
-                List.of(new SimpleGrantedAuthority("USER")));
+    public User getUserByPrincipal(Principal principal) {
+        return repository.findByEmail(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + principal.getName()));
     }
 
     private boolean emailExists(String email) {
