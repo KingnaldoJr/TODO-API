@@ -21,8 +21,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 @Table(name = "user")
+@Entity
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,6 +54,9 @@ public class User implements UserDetails {
     @Size(min = 7, max = 20)
     @Column(name = "phone", length = 20, nullable = false, unique = true)
     private String phone;
+
+    @Column(name = "enabled", nullable = false)
+    private Boolean enabled;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
@@ -90,6 +93,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return getEnabled();
     }
 }

@@ -1,23 +1,29 @@
 package dev.rmjr.todo.service;
 
 import dev.rmjr.todo.entity.User;
+import dev.rmjr.todo.entity.VerificationToken;
+import dev.rmjr.todo.mapper.VerificationTokenMapper;
 import dev.rmjr.todo.repository.UserRepository;
+import dev.rmjr.todo.repository.VerificationTokenRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.mapstruct.factory.Mappers;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.security.Principal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -28,8 +34,22 @@ class UserServiceTest {
     @Mock
     UserRepository repository;
 
+    @Mock
+    VerificationTokenRepository verificationTokenRepository;
+
+    @Mock
+    ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     UserService service;
+
+    VerificationTokenMapper tokenMapper;
+
+    @BeforeEach
+    void injectTokenMapper() {
+        tokenMapper = spy(Mappers.getMapper(VerificationTokenMapper.class));
+        ReflectionTestUtils.setField(service, "tokenMapper", tokenMapper);
+    }
 
     @Test
     void shouldReturnUserByPrincipalTest() {
@@ -58,5 +78,25 @@ class UserServiceTest {
 
         assertThrows(UsernameNotFoundException.class, () -> service.getUserByPrincipal(principal),
                 "User not found with email: reinaldomalinauskasjr@gmail.com");
+    }
+
+    @Test
+    void addVerificationTokenShouldReturnVerificationTokenWithUserTest() {
+        ReflectionTestUtils.setField(service, "expiryTime", 24L);
+        String token = "90d8c81e-75c7-473a-b268-3aa7791a51e3";
+        User user = User.builder().build();
+        VerificationToken expectedToken = VerificationToken.builder()
+                .user(user)
+                .token(token)
+                .build();
+
+        when(tokenMapper.userAndTokenToVerificationToken(any(User.class), anyString(), anyLong()))
+                .thenReturn(expectedToken);
+        when(verificationTokenRepository.save(any(VerificationToken.class))).thenReturn(expectedToken);
+
+        VerificationToken actualToken = service.addVerificationTokenToUser(user, token);
+
+        assertEquals(expectedToken.getToken(), actualToken.getToken());
+        assertEquals(expectedToken.getUser(), actualToken.getUser());
     }
 }
