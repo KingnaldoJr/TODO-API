@@ -39,7 +39,6 @@ public class UserRegistrationRequest {
     @Pattern(regexp = Patterns.PASSWORD)
     private String password;
 
-    @NotBlank
     @Size(min = 7, max = 20)
     @Pattern(regexp = Patterns.PHONE)
     private String phone;

@@ -2,6 +2,8 @@ package dev.rmjr.todo.service;
 
 import dev.rmjr.todo.entity.VerificationToken;
 import dev.rmjr.todo.event.OnUserRegistrationCompleteEvent;
+import dev.rmjr.todo.exception.ExpiredVerificationTokenException;
+import dev.rmjr.todo.exception.InvalidVerificationTokenException;
 import dev.rmjr.todo.mapper.VerificationTokenMapper;
 import dev.rmjr.todo.repository.VerificationTokenRepository;
 import dev.rmjr.todo.request.UserRegistrationRequest;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
@@ -29,6 +32,7 @@ public class UserService {
     private final VerificationTokenRepository verificationTokenRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final VerificationTokenMapper tokenMapper = Mappers.getMapper(VerificationTokenMapper.class);
+    private final UserMapper userMapper = Mappers.getMapper(UserMapper.class);
 
     @Value("${rmjr.registration.expiration-time}")
     Long expiryTime;
@@ -41,7 +45,7 @@ public class UserService {
             throw new PhoneExistsException("There is already a user with the phone: " + registrationDTO.getPhone());
         }
 
-        User user = UserMapper.INSTANCE.userRegistrationRequestToUser(registrationDTO);
+        User user = userMapper.userRegistrationRequestToUser(registrationDTO);
         user.setPassword(passwordEncoder.encode(registrationDTO.getPassword()));
         user = repository.save(user);
 
@@ -59,6 +63,24 @@ public class UserService {
     public VerificationToken addVerificationTokenToUser(User user, String token) {
         return verificationTokenRepository.save(
                 tokenMapper.userAndTokenToVerificationToken(user, token, expiryTime));
+    }
+
+    public VerificationToken getVerificationToken(String token) {
+        return verificationTokenRepository.findByToken(token)
+                .orElseThrow(() -> new InvalidVerificationTokenException("Invalid verification token: " + token));
+    }
+
+    public User confirmUser(String token) {
+        VerificationToken verificationToken = getVerificationToken(token);
+
+        if(verificationToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new ExpiredVerificationTokenException("Expired token: " + token);
+        }
+
+        User user = verificationToken.getUser();
+        user.setEnabled(true);
+
+        return repository.save(user);
     }
 
     private boolean emailExists(String email) {

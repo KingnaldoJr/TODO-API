@@ -2,6 +2,8 @@ package dev.rmjr.todo.service;
 
 import dev.rmjr.todo.entity.User;
 import dev.rmjr.todo.entity.VerificationToken;
+import dev.rmjr.todo.exception.ExpiredVerificationTokenException;
+import dev.rmjr.todo.exception.InvalidVerificationTokenException;
 import dev.rmjr.todo.mapper.VerificationTokenMapper;
 import dev.rmjr.todo.repository.UserRepository;
 import dev.rmjr.todo.repository.VerificationTokenRepository;
@@ -17,10 +19,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -40,6 +42,7 @@ class UserServiceTest {
     @Mock
     ApplicationEventPublisher eventPublisher;
 
+    @Spy
     @InjectMocks
     UserService service;
 
@@ -98,5 +101,96 @@ class UserServiceTest {
 
         assertEquals(expectedToken.getToken(), actualToken.getToken());
         assertEquals(expectedToken.getUser(), actualToken.getUser());
+    }
+
+    @Test
+    void getVerificationTokenShouldReturnTokenTest() {
+        String token = "90d8c81e-75c7-473a-b268-3aa7791a51e3";
+        VerificationToken expectedToken = VerificationToken.builder()
+                .token(token)
+                .build();
+
+        when(verificationTokenRepository.findByToken(anyString())).thenReturn(Optional.of(expectedToken));
+
+        VerificationToken actualToken = service.getVerificationToken(token);
+
+        assertEquals(expectedToken, actualToken);
+    }
+
+    @Test
+    void getVerificationTokenShouldThrowInvalidVerificationTokenTest() {
+        String token = "90d8c81e-75c7-473a-b268-3aa7791a51e3";
+
+        when(verificationTokenRepository.findByToken(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(InvalidVerificationTokenException.class,
+                () -> service.getVerificationToken(token),
+                "Invalid verification token: " + token);
+    }
+
+    @Test
+    void confirmUserShouldReturnUserTest() {
+        String token = "90d8c81e-75c7-473a-b268-3aa7791a51e3";
+        LocalDateTime expiryTime = LocalDateTime.of(2022, 1, 5, 23, 32);
+        LocalDateTime now = LocalDateTime.of(2022, 1, 5, 23, 30);
+        User user = spy(User.builder()
+                .firstName("Reinaldo")
+                .build());
+        VerificationToken verificationToken = VerificationToken.builder()
+                .token(token)
+                .user(user)
+                .expiryDate(expiryTime)
+                .build();
+        User expectedUser = User.builder()
+                .firstName("Reinaldo")
+                .enabled(true)
+                .build();
+
+        try(MockedStatic<LocalDateTime> localDateTimeMock = mockStatic(LocalDateTime.class)) {
+            doReturn(verificationToken).when(service).getVerificationToken(anyString());
+            localDateTimeMock.when(LocalDateTime::now).thenReturn(now);
+            when(repository.save(any(User.class))).thenReturn(expectedUser);
+
+            User actualUser = service.confirmUser(token);
+
+            verify(user, times(1)).setEnabled(true);
+            assertEquals(expectedUser, actualUser);
+        }
+    }
+
+    @Test
+    void confirmUserShouldThrowInvalidVerificationTokenTest() {
+        String token = "90d8c81e-75c7-473a-b268-3aa7791a51e3";
+
+        doThrow(new InvalidVerificationTokenException("Invalid verification token: " + token))
+                .when(service).getVerificationToken(anyString());
+
+        assertThrows(InvalidVerificationTokenException.class,
+                () -> service.confirmUser(token),
+                "Invalid verification token: " + token);
+    }
+
+    @Test
+    void confirmUserShouldThrowExpiredVerificationTokenTest() {
+        String token = "90d8c81e-75c7-473a-b268-3aa7791a51e3";
+        LocalDateTime expiryTime = LocalDateTime.of(2022, 1, 5, 23, 29);
+        LocalDateTime now = LocalDateTime.of(2022, 1, 5, 23, 30);
+        User user = spy(User.builder()
+                .firstName("Reinaldo")
+                .build());
+        VerificationToken verificationToken = VerificationToken.builder()
+                .token(token)
+                .user(user)
+                .expiryDate(expiryTime)
+                .build();
+
+        try(MockedStatic<LocalDateTime> localDateTimeMock = mockStatic(LocalDateTime.class)) {
+            doReturn(verificationToken).when(service).getVerificationToken(anyString());
+            localDateTimeMock.when(LocalDateTime::now).thenReturn(now);
+
+            assertThrows(ExpiredVerificationTokenException.class,
+                    () -> service.confirmUser(token),
+                    "Expired token: " + token);
+        }
     }
 }
