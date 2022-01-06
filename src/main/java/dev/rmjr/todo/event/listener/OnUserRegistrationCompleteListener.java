@@ -29,7 +29,7 @@ public class OnUserRegistrationCompleteListener implements ApplicationListener<O
         String token = UUID.randomUUID().toString();
         userService.addVerificationTokenToUser(event.getUser(), token);
 
-        String confirmationUrl = event.getAppUrl() + "/api/v1/confirm?token=" + token;
+        String confirmationUrl = event.getAppUrl() + "/api/v1/users/confirm?token=" + token;
         String message = "This is a verification email for your account in RMJR TODO, please access "
                 + confirmationUrl
                 + " to verify your account. If you don't created this account, please just ignore this email.";
@@ -37,7 +37,7 @@ public class OnUserRegistrationCompleteListener implements ApplicationListener<O
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setFrom(email);
         mailMessage.setTo(event.getUser().getEmail());
-        mailMessage.setSubject("RMJR TODO - Email Confirmation");
+        mailMessage.setSubject("Email Confirmation");
         mailMessage.setText(message);
 
         mailSender.send(mailMessage);

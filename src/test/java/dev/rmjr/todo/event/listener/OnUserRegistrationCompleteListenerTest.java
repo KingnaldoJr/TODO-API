@@ -15,6 +15,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.Objects;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -55,7 +57,8 @@ class OnUserRegistrationCompleteListenerTest {
         verify(mailSender).send(mailMessageCaptor.capture());
 
         assertEquals("todo@rmjr.dev", mailMessageCaptor.getValue().getFrom());
-        assertEquals("reinaldomalinauskasjr@gmail.com", mailMessageCaptor.getValue().getTo()[0]);
-        assertEquals("RMJR TODO - Email Confirmation", mailMessageCaptor.getValue().getSubject());
+        assertEquals("reinaldomalinauskasjr@gmail.com",
+                Objects.requireNonNull(mailMessageCaptor.getValue().getTo())[0]);
+        assertEquals("Email Confirmation", mailMessageCaptor.getValue().getSubject());
     }
 }
