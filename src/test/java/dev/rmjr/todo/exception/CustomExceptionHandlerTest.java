@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,6 +41,19 @@ class CustomExceptionHandlerTest {
 
         ResponseEntity<GenericErrorResponse> actualResponse = handler
                 .handleBadCredentials(new BadCredentialsException("Invalid Credentials"));
+
+        assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
+    }
+
+    @Test
+    void handleUsernameNotFoundTest() {
+        GenericErrorResponse response = GenericErrorResponse.builder().build();
+
+        doReturn(response)
+                .when(mapper).exceptionToGenericErrorResponse(any(Error.class), any(UsernameNotFoundException.class));
+
+        ResponseEntity<GenericErrorResponse> actualResponse = handler
+                .handleUsernameNotFound(new UsernameNotFoundException("User not found!"));
 
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
     }

@@ -6,6 +6,7 @@ import dev.rmjr.todo.response.GenericErrorResponse;
 import org.mapstruct.factory.Mappers;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -17,6 +18,12 @@ public class CustomExceptionHandler {
     public ResponseEntity<GenericErrorResponse> handleBadCredentials(BadCredentialsException exception) {
         return ResponseEntity.status(Error.BAD_CREDENTIALS.getStatus())
                 .body(mapper.exceptionToGenericErrorResponse(Error.BAD_CREDENTIALS, exception));
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<GenericErrorResponse> handleUsernameNotFound(UsernameNotFoundException exception) {
+        return ResponseEntity.status(Error.USERNAME_NOT_FOUND.getStatus())
+                .body(mapper.exceptionToGenericErrorResponse(Error.USERNAME_NOT_FOUND, exception));
     }
 
     @ExceptionHandler(EmailExistsException.class)
