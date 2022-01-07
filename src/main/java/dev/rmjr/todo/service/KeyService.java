@@ -1,5 +1,6 @@
 package dev.rmjr.todo.service;
 
+import dev.rmjr.todo.exception.UserTokenGenerationFailureException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
@@ -29,7 +30,8 @@ public class KeyService {
 
             return keyPair;
         } catch(IOException e) {
-            throw new RuntimeException("Error reading the token keys: " + e.getMessage(), e.getCause());
+            throw new UserTokenGenerationFailureException(
+                    "Error reading the token keys: " + e.getMessage(), e.getCause());
         }
     }
 }

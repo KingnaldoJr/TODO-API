@@ -43,4 +43,72 @@ class CustomExceptionHandlerTest {
 
         assertEquals(HttpStatus.UNAUTHORIZED, actualResponse.getStatusCode());
     }
+
+    @Test
+    void handleEmailExistsTest() {
+        GenericErrorResponse response = GenericErrorResponse.builder().build();
+
+        doReturn(response)
+                .when(mapper).exceptionToGenericErrorResponse(any(Error.class), any(EmailExistsException.class));
+
+        ResponseEntity<GenericErrorResponse> actualResponse = handler
+                .handleEmailExists(new EmailExistsException("Email already in use"));
+
+        assertEquals(HttpStatus.CONFLICT, actualResponse.getStatusCode());
+    }
+
+    @Test
+    void handlePhoneExistsTest() {
+        GenericErrorResponse response = GenericErrorResponse.builder().build();
+
+        doReturn(response)
+                .when(mapper).exceptionToGenericErrorResponse(any(Error.class), any(PhoneExistsException.class));
+
+        ResponseEntity<GenericErrorResponse> actualResponse = handler
+                .handlePhoneExists(new PhoneExistsException("Phone already in use"));
+
+        assertEquals(HttpStatus.CONFLICT, actualResponse.getStatusCode());
+    }
+
+    @Test
+    void handleExpiredVerificationTokenTest() {
+        GenericErrorResponse response = GenericErrorResponse.builder().build();
+
+        doReturn(response)
+                .when(mapper)
+                .exceptionToGenericErrorResponse(any(Error.class), any(ExpiredVerificationTokenException.class));
+
+        ResponseEntity<GenericErrorResponse> actualResponse = handler
+                .handleExpiredVerificationToken(new ExpiredVerificationTokenException("Verification token expired!"));
+
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, actualResponse.getStatusCode());
+    }
+
+    @Test
+    void handleInvalidVerificationTokenTest() {
+        GenericErrorResponse response = GenericErrorResponse.builder().build();
+
+        doReturn(response)
+                .when(mapper)
+                .exceptionToGenericErrorResponse(any(Error.class), any(InvalidVerificationTokenException.class));
+
+        ResponseEntity<GenericErrorResponse> actualResponse = handler
+                .handleInvalidVerificationToken(new InvalidVerificationTokenException("Verification token not found!"));
+
+        assertEquals(HttpStatus.NOT_FOUND, actualResponse.getStatusCode());
+    }
+
+    @Test
+    void handleUserTokenGenerationFailureTest() {
+        GenericErrorResponse response = GenericErrorResponse.builder().build();
+
+        doReturn(response)
+                .when(mapper)
+                .exceptionToGenericErrorResponse(any(Error.class), any(UserTokenGenerationFailureException.class));
+
+        ResponseEntity<GenericErrorResponse> actualResponse = handler
+                .handleUserTokenGenerationFailure(new UserTokenGenerationFailureException("File not found.", new Throwable()));
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, actualResponse.getStatusCode());
+    }
 }
