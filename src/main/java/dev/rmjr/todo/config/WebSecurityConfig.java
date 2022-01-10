@@ -40,7 +40,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .anyRequest().authenticated()
                 .and()
                 .csrf()
-                    .ignoringAntMatchers(usersUrl, usersUrl + "/register", usersUrl + "/confirm")
+                    .ignoringAntMatchers(usersUrl, usersUrl + "/register")
                     .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .and()
                 .sessionManagement()
