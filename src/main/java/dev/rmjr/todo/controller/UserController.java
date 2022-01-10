@@ -9,10 +9,11 @@ import dev.rmjr.todo.response.UserResponse;
 import dev.rmjr.todo.service.TokenService;
 import dev.rmjr.todo.service.UserService;
 import dev.rmjr.todo.util.Patterns;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.mapstruct.factory.Mappers;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -49,16 +50,18 @@ public class UserController {
         return ResponseEntity.ok(tokenService.generateUserToken(request));
     }
 
-    @GetMapping
-    public ResponseEntity<UserResponse> getUserInformation(@AuthenticationPrincipal Principal principal) {
-        return ResponseEntity.ok(userMapper.userToUserResponse(userService.getUserByPrincipal(principal)));
-    }
-
     @GetMapping("/confirm")
     public ResponseEntity<UserResponse> confirmRegistration(@RequestParam(value = "token")
                                                                 @Size(min = 36, max = 36)
                                                                 @Pattern(regexp = Patterns.UUID)
                                                                 @Valid String token) {
         return ResponseEntity.ok(userMapper.userToUserResponse(userService.confirmUser(token)));
+    }
+
+    @Operation(summary = "Get basic information from authenticated user",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping
+    public ResponseEntity<UserResponse> getUserInformation(Principal principal) {
+        return ResponseEntity.ok(userMapper.userToUserResponse(userService.getUserByPrincipal(principal)));
     }
 }

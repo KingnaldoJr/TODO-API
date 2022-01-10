@@ -5,7 +5,6 @@ import dev.rmjr.todo.entity.User;
 import dev.rmjr.todo.response.UserResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {

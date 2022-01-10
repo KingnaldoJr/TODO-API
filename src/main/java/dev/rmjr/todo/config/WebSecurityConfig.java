@@ -17,6 +17,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -28,15 +29,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
+        String usersUrl = "/api/v1/users";
+
         httpSecurity
                 .authorizeRequests()
-                    .antMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
-                    .antMatchers(HttpMethod.POST, "/api/v1/users/register").permitAll()
-                    .antMatchers(HttpMethod.GET, "/api/v1/users/confirm").permitAll()
-                    .antMatchers(HttpMethod.GET, "/api/v1/users").authenticated()
+                    .antMatchers(HttpMethod.POST, usersUrl + "/register").permitAll()
+                    .antMatchers(HttpMethod.GET, usersUrl + "/confirm").permitAll()
+                    .antMatchers(HttpMethod.GET, "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                    .antMatchers(HttpMethod.POST, usersUrl).permitAll()
                     .anyRequest().authenticated()
                 .and()
-                .csrf().disable()
+                .csrf()
+                    .ignoringAntMatchers(usersUrl, usersUrl + "/register", usersUrl + "/confirm")
+                    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .and()
                 .sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()

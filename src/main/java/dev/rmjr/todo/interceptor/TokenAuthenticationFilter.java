@@ -47,7 +47,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                     .parseClaimsJws(token);
             return true;
         } catch(Exception e) {
-            e.printStackTrace();
             return false;
         }
     }
