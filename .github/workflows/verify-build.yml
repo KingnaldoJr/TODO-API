@@ -53,6 +53,7 @@ jobs:
           RMJR_MAIL_PORT: ${{ secrets.RMJR_MAIL_PORT }}
           RMJR_MAIL_USERNAME: ${{ secrets.RMJR_MAIL_USERNAME }}
           RMJR_MAIL_PASSWORD: ${{ secrets.RMJR_MAIL_PASSWORD }}
+          RMJR_JWT_PRIVATE_KEY: ${{ secrets.RMJR_JWT_PRIVATE_KEY }}
         run: ./gradlew clean generateOpenApiDocs
 
       - name: Static OpenAPI Security Audit (42Crunch)

@@ -9,9 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.StringReader;
 import java.security.*;
+import java.util.Base64;
 
 @Service
 public class KeyService {
@@ -23,7 +23,7 @@ public class KeyService {
         try {
             Security.addProvider(new BouncyCastleProvider());
 
-            PEMParser parser = new PEMParser(Files.newBufferedReader(Paths.get(privateKey)));
+            PEMParser parser = new PEMParser(new StringReader(new String(Base64.getDecoder().decode(privateKey))));
             KeyPair keyPair = new JcaPEMKeyConverter().setProvider("BC").getKeyPair((PEMKeyPair) parser.readObject());
 
             parser.close();
