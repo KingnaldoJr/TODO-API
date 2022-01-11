@@ -47,6 +47,12 @@ jobs:
         run: ./gradlew sonarqube --info
 
       - name: Generate OpenAPI Files
+        env:
+          SPRING_PROFILES_ACTIVE: ci
+          RMJR_MAIL_HOST: ${{ secrets.RMJR_MAIL_HOST }}
+          RMJR_MAIL_PORT: ${{ secrets.RMJR_MAIL_PORT }}
+          RMJR_MAIL_USERNAME: ${{ secrets.RMJR_MAIL_USERNAME }}
+          RMJR_MAIL_PASSWORD: ${{ secrets.RMJR_MAIL_PASSWORD }}
         run: ./gradlew clean generateOpenApiDocs
 
       - name: Static OpenAPI Security Audit (42Crunch)
